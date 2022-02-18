@@ -38,7 +38,12 @@ func Decompress(r io.Reader) ([]byte, error) {
 				m := 3 + int(info>>12)
 				offset := out.Len() - 1 - int(info&0x0FFF)
 
-				if _, err := out.Write(out.Bytes()[offset : offset+m]); err != nil {
+				end := offset + m
+				if end > out.Len() {
+					end = out.Len()
+				}
+
+				if _, err := out.Write(out.Bytes()[offset:end]); err != nil {
 					return nil, err
 				}
 
