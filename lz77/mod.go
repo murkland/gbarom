@@ -23,47 +23,32 @@ func Decompress(r io.Reader) ([]byte, error) {
 
 	var out bytes.Buffer
 	for out.Len() < n {
-		var reference uint8
-		if err := binary.Read(r, binary.BigEndian, &reference); err != nil {
-			return nil, err
+		var ref uint8
+		if err := binary.Read(r, binary.LittleEndian, &ref); err != nil {
+			return out.Bytes(), err
 		}
 
-		for i := 0; i < 8; i++ {
-			if reference&0x80 != 0 {
-				var info uint16
-				if err := binary.Read(r, binary.BigEndian, &info); err != nil {
-					return nil, err
-				}
-
-				m := 3 + int(info>>12)
-				offset := out.Len() - 1 - int(info&0x0FFF)
-
-				end := offset + m
-				if end > out.Len() {
-					end = out.Len()
-				}
-
-				if _, err := out.Write(out.Bytes()[offset:end]); err != nil {
-					return nil, err
-				}
-
-				if out.Len() >= n {
-					// TODO: Maybe check if the length is too long and return an error.
-					break
-				}
-				offset += m
-			} else {
+		for i := 0; i < 8 && out.Len() < n; i++ {
+			if (ref & (0x80 >> i)) == 0 {
 				if _, err := io.CopyN(&out, r, 1); err != nil {
-					return nil, err
+					return out.Bytes(), err
 				}
+				continue
 			}
-			reference <<= 1
-			if out.Len() >= n {
-				// TODO: Maybe check if the length is too long and return an error.
-				break
+
+			var info uint16
+			if err := binary.Read(r, binary.BigEndian, &info); err != nil {
+				return nil, err
+			}
+
+			m := int(info >> 12)
+			offset := int(info & 0x0FFF)
+
+			for j := 0; j < m+3; j++ {
+				out.WriteByte(out.Bytes()[out.Len()-offset-1])
 			}
 		}
 	}
 
-	return out.Bytes(), nil
+	return out.Bytes()[:n], nil
 }
