@@ -5,7 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/undernet/gbarom/lz77"
+	"github.com/yumland/gbarom/lz77"
 )
 
 func TestLZ77Decompress(t *testing.T) {
