@@ -4,7 +4,7 @@ import (
 	"image/color"
 	"testing"
 
-	"github.com/nbarena/gbarom/bgr555"
+	"github.com/undernet/gbarom/bgr555"
 )
 
 func TestToRGBA(t *testing.T) {
