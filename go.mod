@@ -1,3 +1,3 @@
-module github.com/yumland/gbarom
+module github.com/murkland/gbarom
 
 go 1.18
